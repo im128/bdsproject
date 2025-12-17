@@ -1,3 +1,29 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: radial-gradient(circle at top, #020617, #000);
+  color: #e5e7eb;
+  text-align: center;
+}
+
+h1 {
+  margin: 12px 0;
+}
+
+.ui {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 12px;
+  margin: 0 auto 10px;
+  max-width: 900px;
+  background: rgba(2, 6, 23, 0.85);
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+}
+
 .control {
   display: flex;
   flex-direction: column;
@@ -10,8 +36,42 @@
   font-weight: 600;
 }
 
+select,
+input[type="range"] {
+  padding: 4px;
+  border-radius: 6px;
+  border: none;
+}
+
+select {
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
 #timer {
   font-size: 1.1rem;
   font-weight: bold;
   color: #22c55e;
 }
+
+.stats {
+  font-size: 0.9rem;
+}
+
+button {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #22c55e;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+canvas {
+  border: 3px solid #22c55e;
+  border-radius: 14px;
+  background: #052e16;
+  display: block;
+  margin: 0 auto;
+}
+
