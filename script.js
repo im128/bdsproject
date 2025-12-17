@@ -35,10 +35,10 @@ class RadiationParticle {
     this.life = 200;
   }
 
-  update(deltaTimeScaled) {
-    this.x += this.vx * deltaTimeScaled * 50;
-    this.y += this.vy * deltaTimeScaled * 50;
-    this.life -= deltaTimeScaled * 5;
+  update(deltaTime) {
+    this.x += this.vx * deltaTime * 50;
+    this.y += this.vy * deltaTime * 50;
+    this.life -= deltaTime * 5;
   }
 
   draw() {
@@ -59,25 +59,26 @@ class Plant {
     this.wobble = Math.random() * Math.PI;
   }
 
-  update(radiation, fertilizer, deltaTimeScaled) {
+  update(radiation, fertilizer, growthFactor, deltaTime) {
     if (this.dead) return;
 
-    this.wobble += 0.05 * deltaTimeScaled;
+    // wobble uses frame delta for smooth animation
+    this.wobble += 0.05 * deltaTime;
 
     let growthBoost = 0, damageScale = 1, mutationBoost = 1;
     if (fertilizer === "organic") growthBoost = 0.4;
     if (fertilizer === "nitrogen") { growthBoost = 0.7; mutationBoost = 1.3; }
     if (fertilizer === "shielded") damageScale = 0.6;
 
-    const growth = (Math.max(0.4, 1.2 - radiation / 70) + growthBoost) * deltaTimeScaled;
+    const growth = (Math.max(0.4, 1.2 - radiation / 70) + growthBoost) * growthFactor;
     this.height += growth;
 
     if (!this.mutated && radiation >= 20 && radiation <= 70 &&
-        Math.random() < (radiation / 1800) * mutationBoost * deltaTimeScaled) {
+        Math.random() < (radiation / 1800) * mutationBoost * growthFactor) {
       this.mutated = true;
     }
 
-    let damage = radiation * 0.015 * damageScale * deltaTimeScaled;
+    let damage = radiation * 0.015 * damageScale * growthFactor;
     if (this.mutated) damage *= 0.7;
 
     this.health -= damage;
@@ -134,9 +135,9 @@ function animate(time) {
   const deltaTime = (time - lastTime) / 1000; // seconds
   lastTime = time;
 
-  // Scale updates based on tick speed
+  // Tick speed factor controls plant growth/damage/mutations
   const tickSpeedFactor = 10 / secondsPerYear;
-  const deltaTimeScaled = deltaTime * tickSpeedFactor;
+  const growthFactor = 0.5 * tickSpeedFactor; // tweak multiplier for visible growth
 
   ctx.shadowBlur = 0;
   ctx.fillStyle = "#052e16";
@@ -151,17 +152,17 @@ function animate(time) {
 
   // Radiation particles
   if (particles.length < radiation) particles.push(new RadiationParticle());
-  particles.forEach(p => { p.update(deltaTimeScaled); p.draw(); });
+  particles.forEach(p => { p.update(deltaTime); p.draw(); });
   particles = particles.filter(p => p.life > 0);
 
   // Plants
-  plants.forEach(p => { p.update(radiation, fertilizer, deltaTimeScaled); p.draw(); });
+  plants.forEach(p => { p.update(radiation, fertilizer, growthFactor, deltaTime); p.draw(); });
 
   updateUI();
 
   // Year counter
   if (plants.some(p => !p.dead)) {
-    yearTimer += deltaTimeScaled;
+    yearTimer += deltaTime * tickSpeedFactor;
     if (yearTimer >= secondsPerYear) {
       years++;
       yearTimer = 0;
