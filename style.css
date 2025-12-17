@@ -1,4 +1,3 @@
-/* existing CSS remains the same, just ensure .control works for timer */
 .control {
   display: flex;
   flex-direction: column;
