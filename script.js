@@ -6,20 +6,25 @@ const radValue = document.getElementById("radValue");
 const fertSelect = document.getElementById("fertilizer");
 const aliveText = document.getElementById("alive");
 const mutatedText = document.getElementById("mutated");
+const timerText = document.getElementById("timer");
 
+radValue.textContent = radSlider.value;
 radSlider.oninput = () => radValue.textContent = radSlider.value;
 
 const PLANTS = 10;
 let plants = [];
 let particles = [];
+let years = 0;
+let yearTimer = 0;
+const secondsPerYear = 10; // 1 year = 10 seconds
 
 class RadiationParticle {
   constructor() {
     this.x = Math.random() * canvas.width;
     this.y = Math.random() * canvas.height;
-    this.vx = Math.random() * 1 - 0.5;
-    this.vy = Math.random() * 1 + 0.5;
-    this.life = Math.random() * 200;
+    this.vx = Math.random() - 0.5;
+    this.vy = Math.random() + 0.2;
+    this.life = 200;
   }
 
   update() {
@@ -52,21 +57,17 @@ class Plant {
     this.wobble += 0.05;
 
     let growthBoost = 0;
-    let damageReduction = 1;
+    let damageScale = 1;
     let mutationBoost = 1;
 
-    if (fertilizer === "organic") {
-      growthBoost = 0.4;
-    }
+    if (fertilizer === "organic") growthBoost = 0.4;
     if (fertilizer === "nitrogen") {
       growthBoost = 0.7;
       mutationBoost = 1.3;
     }
-    if (fertilizer === "shielded") {
-      damageReduction = 0.6;
-    }
+    if (fertilizer === "shielded") damageScale = 0.6;
 
-    const growth = Math.max(0.3, 1.2 - radiation / 70) + growthBoost;
+    const growth = Math.max(0.4, 1.2 - radiation / 70) + growthBoost;
     this.height += growth;
 
     if (
@@ -78,7 +79,7 @@ class Plant {
       this.mutated = true;
     }
 
-    let damage = radiation * 0.015 * damageReduction;
+    let damage = radiation * 0.015 * damageScale;
     if (this.mutated) damage *= 0.7;
 
     this.health -= damage;
@@ -89,12 +90,8 @@ class Plant {
     const baseY = canvas.height - 30;
     const sway = Math.sin(this.wobble) * 4;
 
-    if (this.mutated && !this.dead) {
-      ctx.shadowColor = "#c084fc";
-      ctx.shadowBlur = 12;
-    } else {
-      ctx.shadowBlur = 0;
-    }
+    ctx.shadowBlur = this.mutated && !this.dead ? 12 : 0;
+    ctx.shadowColor = "#c084fc";
 
     ctx.strokeStyle = this.dead
       ? "#7f1d1d"
@@ -121,6 +118,9 @@ class Plant {
 function resetGame() {
   plants = [];
   particles = [];
+  years = 0;
+  yearTimer = 0;
+  timerText.textContent = "0";
   for (let i = 0; i < PLANTS; i++) {
     plants.push(new Plant(80 + i * 80));
   }
@@ -131,28 +131,40 @@ function updateUI() {
   mutatedText.textContent = plants.filter(p => p.mutated && !p.dead).length;
 }
 
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+let lastTime = performance.now();
+function animate(time) {
+  const deltaTime = (time - lastTime) / 1000; // seconds
+  lastTime = time;
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "#052e16";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const radiation = Number(radSlider.value);
   const fertilizer = fertSelect.value;
 
-  if (particles.length < radiation * 1.5) {
+  // Radiation particles
+  if (particles.length < radiation) {
     particles.push(new RadiationParticle());
   }
-
-  particles.forEach(p => {
-    p.update();
-    p.draw();
-  });
+  particles.forEach(p => { p.update(); p.draw(); });
   particles = particles.filter(p => p.life > 0);
 
-  plants.forEach(p => {
-    p.update(radiation, fertilizer);
-    p.draw();
-  });
+  // Plants
+  plants.forEach(p => { p.update(radiation, fertilizer); p.draw(); });
 
   updateUI();
+
+  // Update timer only if at least one plant is alive
+  if (plants.some(p => !p.dead)) {
+    yearTimer += deltaTime;
+    if (yearTimer >= secondsPerYear) {
+      years++;
+      yearTimer = 0;
+      timerText.textContent = years;
+    }
+  }
+
   requestAnimationFrame(animate);
 }
 
