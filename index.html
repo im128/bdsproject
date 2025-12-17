@@ -10,24 +10,29 @@
 <h1>☢️ Radioactive Plant Survival</h1>
 
 <div class="ui">
-  <label>
-    Radiation:
+  <div class="control">
+    <label>Years Survived</label>
+    <span id="timer">0</span>
+  </div>
+
+  <div class="control">
+    <label>Radiation</label>
     <input type="range" id="radiation" min="0" max="100" value="24">
     <span id="radValue">24</span>
-  </label>
+  </div>
 
-  <label>
-    Fertilizer:
+  <div class="control">
+    <label>Fertilizer</label>
     <select id="fertilizer">
       <option value="none">None</option>
       <option value="organic">Organic</option>
       <option value="nitrogen">Nitrogen</option>
       <option value="shielded">Shielded</option>
     </select>
-  </label>
+  </div>
 
   <div class="stats">
-    🌱 Alive: <span id="alive">0</span> |
+    🌱 Alive: <span id="alive">0</span>
     🧬 Mutated: <span id="mutated">0</span>
   </div>
 
