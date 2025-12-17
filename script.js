@@ -35,10 +35,10 @@ class RadiationParticle {
     this.life = 200;
   }
 
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    this.life--;
+  update(deltaTimeScaled) {
+    this.x += this.vx * deltaTimeScaled * 50;
+    this.y += this.vy * deltaTimeScaled * 50;
+    this.life -= deltaTimeScaled * 5;
   }
 
   draw() {
@@ -59,25 +59,25 @@ class Plant {
     this.wobble = Math.random() * Math.PI;
   }
 
-  update(radiation, fertilizer) {
+  update(radiation, fertilizer, deltaTimeScaled) {
     if (this.dead) return;
 
-    this.wobble += 0.05;
+    this.wobble += 0.05 * deltaTimeScaled;
 
     let growthBoost = 0, damageScale = 1, mutationBoost = 1;
     if (fertilizer === "organic") growthBoost = 0.4;
     if (fertilizer === "nitrogen") { growthBoost = 0.7; mutationBoost = 1.3; }
     if (fertilizer === "shielded") damageScale = 0.6;
 
-    const growth = Math.max(0.4, 1.2 - radiation / 70) + growthBoost;
+    const growth = (Math.max(0.4, 1.2 - radiation / 70) + growthBoost) * deltaTimeScaled;
     this.height += growth;
 
     if (!this.mutated && radiation >= 20 && radiation <= 70 &&
-        Math.random() < (radiation / 1800) * mutationBoost) {
+        Math.random() < (radiation / 1800) * mutationBoost * deltaTimeScaled) {
       this.mutated = true;
     }
 
-    let damage = radiation * 0.015 * damageScale;
+    let damage = radiation * 0.015 * damageScale * deltaTimeScaled;
     if (this.mutated) damage *= 0.7;
 
     this.health -= damage;
@@ -134,6 +134,10 @@ function animate(time) {
   const deltaTime = (time - lastTime) / 1000; // seconds
   lastTime = time;
 
+  // Scale updates based on tick speed
+  const tickSpeedFactor = 10 / secondsPerYear;
+  const deltaTimeScaled = deltaTime * tickSpeedFactor;
+
   ctx.shadowBlur = 0;
   ctx.fillStyle = "#052e16";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -147,17 +151,17 @@ function animate(time) {
 
   // Radiation particles
   if (particles.length < radiation) particles.push(new RadiationParticle());
-  particles.forEach(p => { p.update(); p.draw(); });
+  particles.forEach(p => { p.update(deltaTimeScaled); p.draw(); });
   particles = particles.filter(p => p.life > 0);
 
   // Plants
-  plants.forEach(p => { p.update(radiation, fertilizer); p.draw(); });
+  plants.forEach(p => { p.update(radiation, fertilizer, deltaTimeScaled); p.draw(); });
 
   updateUI();
 
   // Year counter
   if (plants.some(p => !p.dead)) {
-    yearTimer += deltaTime;
+    yearTimer += deltaTimeScaled;
     if (yearTimer >= secondsPerYear) {
       years++;
       yearTimer = 0;
