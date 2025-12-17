@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Radioactive Plant Survival</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>☢️ Radioactive Plant Survival</h1>
+
+<div class="ui">
+  <label>
+    Radiation:
+    <input type="range" id="radiation" min="0" max="100" value="20">
+    <span id="radValue">20</span>
+  </label>
+
+  <div class="stats">
+    🌱 Alive: <span id="alive">0</span> |
+    🧬 Mutated: <span id="mutated">0</span>
+  </div>
+
+  <button onclick="resetGame()">Restart</button>
+</div>
+
+<canvas id="canvas" width="900" height="450"></canvas>
+
+<script src="script.js"></script>
+</body>
+</html>

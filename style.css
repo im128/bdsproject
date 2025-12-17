@@ -1,0 +1,31 @@
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: radial-gradient(circle at top, #020617, #000);
+  color: #e5e7eb;
+  text-align: center;
+}
+
+h1 {
+  margin: 10px 0;
+}
+
+.ui {
+  margin-bottom: 10px;
+}
+
+canvas {
+  border: 3px solid #22c55e;
+  border-radius: 14px;
+  background: linear-gradient(#020617, #052e16);
+}
+
+button {
+  margin-left: 10px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #22c55e;
+  font-weight: bold;
+  cursor: pointer;
+}
