@@ -4,6 +4,8 @@ const ctx = canvas.getContext("2d");
 const radSlider = document.getElementById("radiation");
 const radValue = document.getElementById("radValue");
 const fertSelect = document.getElementById("fertilizer");
+const speedSlider = document.getElementById("speed");
+const speedValue = document.getElementById("speedValue");
 const aliveText = document.getElementById("alive");
 const mutatedText = document.getElementById("mutated");
 const timerText = document.getElementById("timer");
@@ -11,12 +13,18 @@ const timerText = document.getElementById("timer");
 radValue.textContent = radSlider.value;
 radSlider.oninput = () => radValue.textContent = radSlider.value;
 
+speedValue.textContent = speedSlider.value + "s/year";
+let secondsPerYear = Number(speedSlider.value);
+speedSlider.oninput = () => {
+  secondsPerYear = Number(speedSlider.value);
+  speedValue.textContent = secondsPerYear + "s/year";
+};
+
 const PLANTS = 10;
 let plants = [];
 let particles = [];
 let years = 0;
 let yearTimer = 0;
-const secondsPerYear = 10; // 1 year = 10 seconds
 
 class RadiationParticle {
   constructor() {
@@ -56,26 +64,16 @@ class Plant {
 
     this.wobble += 0.05;
 
-    let growthBoost = 0;
-    let damageScale = 1;
-    let mutationBoost = 1;
-
+    let growthBoost = 0, damageScale = 1, mutationBoost = 1;
     if (fertilizer === "organic") growthBoost = 0.4;
-    if (fertilizer === "nitrogen") {
-      growthBoost = 0.7;
-      mutationBoost = 1.3;
-    }
+    if (fertilizer === "nitrogen") { growthBoost = 0.7; mutationBoost = 1.3; }
     if (fertilizer === "shielded") damageScale = 0.6;
 
     const growth = Math.max(0.4, 1.2 - radiation / 70) + growthBoost;
     this.height += growth;
 
-    if (
-      !this.mutated &&
-      radiation >= 20 &&
-      radiation <= 70 &&
-      Math.random() < (radiation / 1800) * mutationBoost
-    ) {
+    if (!this.mutated && radiation >= 20 && radiation <= 70 &&
+        Math.random() < (radiation / 1800) * mutationBoost) {
       this.mutated = true;
     }
 
@@ -143,10 +141,12 @@ function animate(time) {
   const radiation = Number(radSlider.value);
   const fertilizer = fertSelect.value;
 
+  // Dynamic zoom
+  let zoom = 1 - Math.min(years / 100, 0.7);
+  ctx.setTransform(zoom, 0, 0, zoom, canvas.width * (1 - zoom) / 2, canvas.height * (1 - zoom) / 2);
+
   // Radiation particles
-  if (particles.length < radiation) {
-    particles.push(new RadiationParticle());
-  }
+  if (particles.length < radiation) particles.push(new RadiationParticle());
   particles.forEach(p => { p.update(); p.draw(); });
   particles = particles.filter(p => p.life > 0);
 
@@ -155,7 +155,7 @@ function animate(time) {
 
   updateUI();
 
-  // Update timer only if at least one plant is alive
+  // Year counter
   if (plants.some(p => !p.dead)) {
     yearTimer += deltaTime;
     if (yearTimer >= secondsPerYear) {
